@@ -1,5 +1,6 @@
 package de.waldorfaugsburg.infoboard.streamdeck;
 
+import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import lombok.extern.slf4j.Slf4j;
 import org.hid4java.*;
 import org.imgscalr.Scalr;
@@ -91,7 +92,19 @@ public class StreamDeck {
         }
     }
 
-    public void setImage(final int key, BufferedImage image) {
+    public void renderButton(final InfoboardButton button) {
+        BufferedImage image;
+        try {
+            image = button.getStreamDeckIcon().createImage();
+        } catch (final IOException e) {
+            log.error("Error while creating icon for key {}", button.getIndex(), e);
+            return;
+        }
+
+        renderImage(button.getIndex(), image);
+    }
+
+    public void renderImage(final int key, BufferedImage image) {
         if (key < 0 || key > 14) throw new IllegalArgumentException("out of bounds");
 
         if (image.getHeight() != IMAGE_SIZE || image.getWidth() != IMAGE_SIZE) {

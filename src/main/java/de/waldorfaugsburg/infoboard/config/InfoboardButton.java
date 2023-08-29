@@ -2,10 +2,9 @@ package de.waldorfaugsburg.infoboard.config;
 
 import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
 import de.waldorfaugsburg.infoboard.config.icon.AbstractStreamDeckIcon;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Getter
+@Data
 @NoArgsConstructor
 public class InfoboardButton {
     private int index;

@@ -5,8 +5,6 @@ import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.swing.*;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -28,24 +26,20 @@ public class MenuRegistry {
 
     public void addMenu(final InfoboardMenu menu) {
         menuMap.put(menu.getId(), menu);
+        application.getConfiguration().getMenus().add(menu);
         updateMenu();
     }
 
-    public void removeMenu(final InfoboardMenu menu) {
-        menuMap.remove(menu.getId(), menu);
+    public void removeMenu(final UUID menuId) {
+        final InfoboardMenu menu = menuMap.remove(menuId);
+        if (menu == null) throw new IllegalArgumentException("invalid menu");
+
+        application.getConfiguration().getMenus().remove(menu);
         // TODO remove references (actions)
         updateMenu();
     }
 
     public void updateMenu() {
-        application.getConfiguration().getMenus().clear();
-        application.getConfiguration().getMenus().addAll(menuMap.values());
-
-        final InfoboardMenu mainMenu = getMainMenu();
-        if (mainMenu == null) {
-            application.getConfiguration().setMainMenu(application.getConfiguration().getMenus().get(0).getId());
-        }
-
         InfoboardMenu currentMenu = getCurrentMenu();
         if (currentMenu == null) {
             currentMenu = getMainMenu();
@@ -56,8 +50,7 @@ public class MenuRegistry {
 
     public void changeMenu(final UUID id) {
         final InfoboardMenu targetMenu = getMenu(id);
-        if (targetMenu == null)
-            throw new IllegalArgumentException("menu not found");
+        if (targetMenu == null) throw new IllegalArgumentException("menu not found");
 
         changeMenu(targetMenu);
     }
@@ -65,10 +58,11 @@ public class MenuRegistry {
     public void changeMenu(final InfoboardMenu targetMenu) {
         currentMenuId = targetMenu.getId();
 
-        // Clear and update frame
-        application.getFrame().clearAndUpdate();
+        // Clear frame and update menubar
+        application.getFrame().clear();
+        application.getFrame().updateMenuBar();
 
-        // Clear if streamdeck is initialized
+        // Clear streamdeck if initialized
         if (application.getStreamDeck() != null) {
             application.getStreamDeck().clear();
         }
@@ -77,20 +71,8 @@ public class MenuRegistry {
         for (int i = 0; i < targetMenu.getButtons().size(); i++) {
             final InfoboardButton button = targetMenu.getButtons().get(i);
 
-            // Update frame button
-            final JButton frameButton = application.getFrame().getButton(button.getIndex());
-            frameButton.setText(button.getName());
-
-            if (frameButton.getActionListeners().length == 0) {
-                frameButton.addActionListener(e -> button.getAction().run(application));
-            }
-
-            // Update streamdeck button
-            try {
-                application.getStreamDeck().setImage(button.getIndex(), button.getStreamDeckIcon().createImage());
-            } catch (final IOException e) {
-                log.error("Error while setting image for key {}", button.getIndex(), e);
-            }
+            application.getFrame().addButton(button);
+            application.getStreamDeck().renderButton(button);
         }
     }
 
