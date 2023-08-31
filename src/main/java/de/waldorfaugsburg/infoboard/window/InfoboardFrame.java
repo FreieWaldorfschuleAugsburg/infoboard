@@ -8,10 +8,17 @@ import de.waldorfaugsburg.infoboard.config.icon.TextIcon;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class InfoboardFrame extends JFrame {
@@ -51,8 +58,10 @@ public class InfoboardFrame extends JFrame {
         // Fill button grid
         for (int i = 0; i < BUTTON_COUNT; i++) {
             final JButton button = new JButton();
-            button.setFocusable(false);
-            button.setFocusPainted(false);
+            if (application.getConfiguration().isProduction()) {
+                button.setFocusable(false);
+                button.setFocusPainted(false);
+            }
 
             buttonGrid.add(button);
             buttonMap.put(i, button);
@@ -134,7 +143,10 @@ public class InfoboardFrame extends JFrame {
     }
 
     public void clear() {
-        updateMenuBar();
+        if (!application.getConfiguration().isProduction()) {
+            updateMenuBar();
+        }
+
 
         // Clear the buttons
         for (final Map.Entry<Integer, JButton> entry : buttonMap.entrySet()) {
@@ -144,6 +156,16 @@ public class InfoboardFrame extends JFrame {
             button.setText("");
             button.setIcon(null);
             button.setFont(new Font(button.getFont().getName(), Font.BOLD, 14));
+            button.setTransferHandler(new ButtonTransferHandler(index));
+
+            button.addMouseMotionListener(new MouseAdapter() {
+                @Override
+                public void mouseDragged(final MouseEvent e) {
+                    final JButton sourceButton = (JButton) e.getSource();
+                    final TransferHandler transferHandler = sourceButton.getTransferHandler();
+                    transferHandler.exportAsDrag(sourceButton, e, TransferHandler.COPY);
+                }
+            });
 
             // Add popup menu
             final JPopupMenu popupMenu = new JPopupMenu();
@@ -156,7 +178,7 @@ public class InfoboardFrame extends JFrame {
                         "Button ertellen",
                         JOptionPane.PLAIN_MESSAGE);
 
-                final InfoboardButton boardButton = new InfoboardButton(index, name, null, new TextIcon());
+                final InfoboardButton boardButton = new InfoboardButton(index, name, null, new TextIcon(name));
                 application.getMenuRegistry().getCurrentMenu().getButtons().add(boardButton);
                 application.getMenuRegistry().updateMenu();
             });
@@ -229,5 +251,64 @@ public class InfoboardFrame extends JFrame {
         final ButtonModel model = frameButton.getModel();
         model.setPressed(pressed);
         model.setArmed(pressed);
+    }
+
+    private class ButtonTransferHandler extends TransferHandler {
+
+        public static final DataFlavor SUPPORTED_DATE_FLAVOR = DataFlavor.stringFlavor;
+
+        private int index;
+
+        public ButtonTransferHandler(final int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+
+        @Override
+        public int getSourceActions(final JComponent c) {
+            return DnDConstants.ACTION_COPY_OR_MOVE;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            return new StringSelection(Integer.toString(getIndex()));
+        }
+
+        @Override
+        public boolean canImport(final TransferSupport support) {
+            return support.isDataFlavorSupported(SUPPORTED_DATE_FLAVOR);
+        }
+
+        @Override
+        public boolean importData(final TransferSupport support) {
+            boolean accept = false;
+            if (canImport(support)) {
+                try {
+                    Transferable t = support.getTransferable();
+                    Object value = t.getTransferData(SUPPORTED_DATE_FLAVOR);
+                    if (value instanceof String) {
+                        Component component = support.getComponent();
+                        if (component instanceof JButton) {
+                            final int sourceIndex = Integer.parseInt(value.toString());
+                            final int targetIndex = ((ButtonTransferHandler) ((JButton) component).getTransferHandler()).getIndex();
+
+                            for (final InfoboardButton button : application.getMenuRegistry().getCurrentMenu().getButtons()) {
+                                if (button.getIndex() == sourceIndex) button.setIndex(targetIndex);
+                            }
+
+                            application.getMenuRegistry().updateMenu();
+
+                            accept = true;
+                        }
+                    }
+                } catch (Exception exp) {
+                    exp.printStackTrace();
+                }
+            }
+            return accept;
+        }
     }
 }

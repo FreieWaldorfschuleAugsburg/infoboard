@@ -60,7 +60,6 @@ public class MenuRegistry {
 
         // Clear frame and update menubar
         application.getFrame().clear();
-        application.getFrame().updateMenuBar();
 
         // Clear streamdeck if initialized
         if (application.getStreamDeck() != null) {

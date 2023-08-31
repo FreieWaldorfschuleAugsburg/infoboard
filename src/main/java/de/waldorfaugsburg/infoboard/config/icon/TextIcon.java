@@ -17,6 +17,11 @@ public class TextIcon extends AbstractStreamDeckIcon {
     private int fontSize = 12;
     private String text = "Hallo Welt";
 
+    public TextIcon(final String text) {
+        this();
+        this.text = text;
+    }
+
     public TextIcon() {
         super(StreamDeckIconType.TEXT);
     }
