@@ -5,6 +5,7 @@ import de.waldorfaugsburg.infoboard.config.icon.AbstractStreamDeckIcon;
 import lombok.*;
 
 @Data
+@AllArgsConstructor
 @NoArgsConstructor
 public class InfoboardButton {
     private int index;

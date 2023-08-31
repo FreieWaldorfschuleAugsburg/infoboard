@@ -2,7 +2,9 @@ package de.waldorfaugsburg.infoboard.window;
 
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
+import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
 import de.waldorfaugsburg.infoboard.config.action.ButtonActionType;
+import de.waldorfaugsburg.infoboard.config.action.MenuChangeAction;
 import de.waldorfaugsburg.infoboard.config.icon.StreamDeckIconType;
 
 import javax.swing.*;
@@ -12,7 +14,7 @@ import java.awt.event.ItemEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-public class ButtonIconFrame extends JDialog {
+public class ButtonActionFrame extends JDialog {
 
     private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(10, 10, 10, 10);
 
@@ -20,14 +22,13 @@ public class ButtonIconFrame extends JDialog {
     private final InfoboardButton button;
 
     private final JPanel settingsPane;
-    private final JLabel iconLabel;
 
-    public ButtonIconFrame(final JFrame parent, final InfoboardApplication application, final InfoboardButton button) throws HeadlessException {
+    public ButtonActionFrame(final JFrame parent, final InfoboardApplication application, final InfoboardButton button) throws HeadlessException {
         super(parent);
         this.application = application;
         this.button = button;
 
-        setTitle(button.getName() + " – Icon ändern");
+        setTitle(button.getName() + " – Aktion ändern");
         setSize(600, 360);
         setResizable(false);
         setLocationRelativeTo(parent);
@@ -38,26 +39,23 @@ public class ButtonIconFrame extends JDialog {
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
-        iconLabel = new JLabel();
-        iconLabel.setBounds(502, 11, 72, 72);
-        updateImage();
-        contentPane.add(iconLabel);
+        if (button.getAction() == null) {
+            button.setAction(ButtonActionType.values()[0].getNewInstance());
+        }
 
-        final JComboBox<StreamDeckIconType> typeSelector = new JComboBox<>(StreamDeckIconType.values());
+        final JComboBox<ButtonActionType> typeSelector = new JComboBox<>(ButtonActionType.values());
         typeSelector.setBounds(10, 11, 200, 22);
-        typeSelector.setSelectedItem(button.getStreamDeckIcon().getType());
         typeSelector.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                button.setStreamDeckIcon(((StreamDeckIconType) typeSelector.getSelectedItem()).getNewInstance());
+                button.setAction(((ButtonActionType) typeSelector.getSelectedItem()).getNewInstance());
                 updateSettingsForm();
-                updateImage();
             }
         });
         typeSelector.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if (value instanceof StreamDeckIconType iconType) {
-                    value = iconType.getName();
+                if (value instanceof ButtonActionType actionType) {
+                    value = actionType.getName();
                 }
 
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -80,18 +78,8 @@ public class ButtonIconFrame extends JDialog {
 
     private void updateSettingsForm() {
         settingsPane.removeAll();
-        button.getStreamDeckIcon().createSettingsForm(this, settingsPane);
+        button.getAction().createSettingsForm(application, this, settingsPane);
         settingsPane.repaint();
         settingsPane.revalidate();
-    }
-
-    public void updateImage() {
-        try {
-            final BufferedImage image = button.getStreamDeckIcon().createImage();
-            iconLabel.setIcon(new ImageIcon(image));
-        } catch (final IOException e) {
-            iconLabel.setText(e.getMessage());
-        }
-        application.getMenuRegistry().updateMenu();
     }
 }

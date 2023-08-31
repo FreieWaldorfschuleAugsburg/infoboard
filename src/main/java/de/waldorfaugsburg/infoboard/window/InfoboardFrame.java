@@ -4,6 +4,7 @@ import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
 import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
+import de.waldorfaugsburg.infoboard.config.icon.TextIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -136,10 +137,33 @@ public class InfoboardFrame extends JFrame {
         updateMenuBar();
 
         // Clear the buttons
-        for (final JButton button : buttonMap.values()) {
+        for (final Map.Entry<Integer, JButton> entry : buttonMap.entrySet()) {
+            final int index = entry.getKey();
+            final JButton button = entry.getValue();
+
             button.setText("");
             button.setIcon(null);
             button.setFont(new Font(button.getFont().getName(), Font.BOLD, 14));
+
+            // Add popup menu
+            final JPopupMenu popupMenu = new JPopupMenu();
+
+            final JMenuItem createButton = new JMenuItem("Button erstellen");
+            createButton.addActionListener(e -> {
+                final String name = JOptionPane.showInputDialog(
+                        this,
+                        "Namen eingeben",
+                        "Button ertellen",
+                        JOptionPane.PLAIN_MESSAGE);
+
+                final InfoboardButton boardButton = new InfoboardButton(index, name, null, new TextIcon());
+                application.getMenuRegistry().getCurrentMenu().getButtons().add(boardButton);
+                application.getMenuRegistry().updateMenu();
+            });
+
+            button.setComponentPopupMenu(popupMenu);
+
+            popupMenu.add(createButton);
 
             // Remove all action listeners
             for (final ActionListener listener : button.getActionListeners()) {
@@ -160,6 +184,7 @@ public class InfoboardFrame extends JFrame {
             action.run(application);
         });
 
+        // Override popup menu
         final JPopupMenu popupMenu = new JPopupMenu();
 
         final JMenuItem editName = new JMenuItem("Name ändern");
@@ -181,7 +206,18 @@ public class InfoboardFrame extends JFrame {
         popupMenu.add(editIcon);
 
         final JMenuItem editAction = new JMenuItem("Aktion ändern");
+        editAction.addActionListener(e -> new ButtonActionFrame(this, application, button));
         popupMenu.add(editAction);
+
+        popupMenu.addSeparator();
+
+        final JMenuItem deleteButton = new JMenuItem("Button löschen");
+        deleteButton.addActionListener(e -> {
+            application.getMenuRegistry().getCurrentMenu().getButtons().remove(button);
+            application.getMenuRegistry().updateMenu();
+        });
+        popupMenu.add(deleteButton);
+
 
         frameButton.setComponentPopupMenu(popupMenu);
     }

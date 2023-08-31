@@ -31,7 +31,7 @@ public class StreamDeck {
     private static final byte FIRMWARE_REPORT_ID = 0x05;
 
     private static final byte STRING_LENGTH = 32;
-    private static final byte IMAGE_SIZE = 72;
+    public static final byte IMAGE_SIZE = 72;
     private static final byte READ_SIZE = 19;
     private static final byte READ_START_INDEX = 4;
 
