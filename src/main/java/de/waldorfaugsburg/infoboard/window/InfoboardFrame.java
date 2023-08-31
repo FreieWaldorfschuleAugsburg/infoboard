@@ -34,6 +34,8 @@ public class InfoboardFrame extends JFrame {
     private final InfoboardApplication application;
     private final Map<Integer, JButton> buttonMap = new HashMap<>();
 
+    private InfoboardButton clipboardButton;
+
     public InfoboardFrame(final InfoboardApplication application, final boolean production) throws HeadlessException {
         this.application = application;
 
@@ -58,10 +60,8 @@ public class InfoboardFrame extends JFrame {
         // Fill button grid
         for (int i = 0; i < BUTTON_COUNT; i++) {
             final JButton button = new JButton();
-            if (application.getConfiguration().isProduction()) {
-                button.setFocusable(false);
-                button.setFocusPainted(false);
-            }
+            button.setFocusable(false);
+            button.setFocusPainted(false);
 
             buttonGrid.add(button);
             buttonMap.put(i, button);
@@ -153,6 +153,10 @@ public class InfoboardFrame extends JFrame {
             final int index = entry.getKey();
             final JButton button = entry.getValue();
 
+            final ButtonModel model = button.getModel();
+            model.setPressed(false);
+            model.setArmed(false);
+
             button.setText("");
             button.setIcon(null);
             button.setFont(new Font(button.getFont().getName(), Font.BOLD, 14));
@@ -164,11 +168,28 @@ public class InfoboardFrame extends JFrame {
                     final JButton sourceButton = (JButton) e.getSource();
                     final TransferHandler transferHandler = sourceButton.getTransferHandler();
                     transferHandler.exportAsDrag(sourceButton, e, TransferHandler.COPY);
+
+                    for (final ActionListener listener : button.getActionListeners()) {
+                        button.removeActionListener(listener);
+                    }
                 }
             });
 
             // Add popup menu
             final JPopupMenu popupMenu = new JPopupMenu();
+
+            if (clipboardButton != null) {
+                final JMenuItem pasteButton = new JMenuItem("Button einfügen");
+                pasteButton.addActionListener(e -> {
+                    final InfoboardButton clonedButton = application.getGson().fromJson(application.getGson().toJson(clipboardButton), InfoboardButton.class);
+                    clonedButton.setIndex(index);
+                    application.getMenuRegistry().getCurrentMenu().getButtons().add(clonedButton);
+
+                    clipboardButton = null;
+                    application.getMenuRegistry().updateMenu();
+                });
+                popupMenu.add(pasteButton);
+            }
 
             final JMenuItem createButton = new JMenuItem("Button erstellen");
             createButton.addActionListener(e -> {
@@ -182,10 +203,9 @@ public class InfoboardFrame extends JFrame {
                 application.getMenuRegistry().getCurrentMenu().getButtons().add(boardButton);
                 application.getMenuRegistry().updateMenu();
             });
+            popupMenu.add(createButton);
 
             button.setComponentPopupMenu(popupMenu);
-
-            popupMenu.add(createButton);
 
             // Remove all action listeners
             for (final ActionListener listener : button.getActionListeners()) {
@@ -233,6 +253,13 @@ public class InfoboardFrame extends JFrame {
 
         popupMenu.addSeparator();
 
+        final JMenuItem copyButton = new JMenuItem("Button kopieren");
+        copyButton.addActionListener(e -> {
+            clipboardButton = button;
+            application.getMenuRegistry().updateMenu();
+        });
+        popupMenu.add(copyButton);
+
         final JMenuItem deleteButton = new JMenuItem("Button löschen");
         deleteButton.addActionListener(e -> {
             application.getMenuRegistry().getCurrentMenu().getButtons().remove(button);
@@ -257,7 +284,7 @@ public class InfoboardFrame extends JFrame {
 
         public static final DataFlavor SUPPORTED_DATE_FLAVOR = DataFlavor.stringFlavor;
 
-        private int index;
+        private final int index;
 
         public ButtonTransferHandler(final int index) {
             this.index = index;

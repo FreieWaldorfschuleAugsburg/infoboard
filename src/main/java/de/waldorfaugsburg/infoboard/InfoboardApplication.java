@@ -107,6 +107,10 @@ public class InfoboardApplication {
         return false;
     }
 
+    public Gson getGson() {
+        return gson;
+    }
+
     public InfoboardFrame getFrame() {
         return frame;
     }
