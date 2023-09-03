@@ -3,8 +3,8 @@ package de.waldorfaugsburg.infoboard.window;
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
-import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
 import de.waldorfaugsburg.infoboard.config.icon.TextIcon;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,15 +18,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
+@Slf4j
 public class InfoboardFrame extends JFrame {
 
     private static final int BORDER = 10;
     private static final int GRID_ROWS = 3;
     private static final int GRID_COLUMNS = 5;
-    private static final int BUTTON_COUNT = GRID_ROWS * GRID_COLUMNS;
+    public static final int BUTTON_COUNT = GRID_ROWS * GRID_COLUMNS;
 
     private static final int NON_PRODUCTION_WIDTH = 1280;
     private static final int NON_PRODUCTION_HEIGHT = 720;
@@ -75,11 +75,7 @@ public class InfoboardFrame extends JFrame {
     protected void processWindowEvent(final WindowEvent e) {
         if (e.getID() == WindowEvent.WINDOW_CLOSING) {
             if (application.hasConfigurationChanged()) {
-                final int option = JOptionPane.showConfirmDialog(
-                        this,
-                        "Es wurden Änderungen vorgenommen. Möchten Sie diese speichern?",
-                        "Speichervorgang",
-                        JOptionPane.YES_NO_CANCEL_OPTION);
+                final int option = JOptionPane.showConfirmDialog(this, "Es wurden Änderungen vorgenommen. Möchten Sie diese speichern?", "Speichervorgang", JOptionPane.YES_NO_CANCEL_OPTION);
 
                 if (option == JOptionPane.YES_OPTION) {
                     application.saveConfiguration();
@@ -124,14 +120,14 @@ public class InfoboardFrame extends JFrame {
         final JMenu menuSelector = new JMenu("Menü");
 
         final JMenuItem createMenuItem = new JMenuItem("Menüs verwalten...");
-        createMenuItem.addActionListener(e -> new SettingsFrame(this, application));
+        createMenuItem.addActionListener(e -> new MenuManagementFrame(this, application));
 
         menuSelector.add(createMenuItem);
         menuSelector.addSeparator();
 
         for (final InfoboardMenu menu : application.getConfiguration().getMenus()) {
-            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(menu.getName(), application.getMenuRegistry().getCurrentMenuId() == menu.getId());
-            item.addActionListener(e -> application.getMenuRegistry().changeMenu(menu.getId()));
+            final JRadioButtonMenuItem item = new JRadioButtonMenuItem(menu.getName(), application.getMenuRenderer().getCurrentMenuId() == menu.getId());
+            item.addActionListener(e -> application.getMenuRenderer().changeMenu(menu.getId()));
             menuSelector.add(item);
         }
 
@@ -146,7 +142,6 @@ public class InfoboardFrame extends JFrame {
         if (!application.getConfiguration().isProduction()) {
             updateMenuBar();
         }
-
 
         // Clear the buttons
         for (final Map.Entry<Integer, JButton> entry : buttonMap.entrySet()) {
@@ -182,26 +177,21 @@ public class InfoboardFrame extends JFrame {
                 final JMenuItem pasteButton = new JMenuItem("Button einfügen");
                 pasteButton.addActionListener(e -> {
                     final InfoboardButton clonedButton = application.getGson().fromJson(application.getGson().toJson(clipboardButton), InfoboardButton.class);
-                    clonedButton.setIndex(index);
-                    application.getMenuRegistry().getCurrentMenu().getButtons().add(clonedButton);
+                    application.getMenuRenderer().getCurrentMenu().getButtons().put(index, clonedButton);
 
                     clipboardButton = null;
-                    application.getMenuRegistry().updateMenu();
+                    application.getMenuRenderer().updateMenu();
                 });
                 popupMenu.add(pasteButton);
             }
 
             final JMenuItem createButton = new JMenuItem("Button erstellen");
             createButton.addActionListener(e -> {
-                final String name = JOptionPane.showInputDialog(
-                        this,
-                        "Namen eingeben",
-                        "Button ertellen",
-                        JOptionPane.PLAIN_MESSAGE);
+                final String name = JOptionPane.showInputDialog(this, "Namen eingeben", "Button ertellen", JOptionPane.PLAIN_MESSAGE);
 
-                final InfoboardButton boardButton = new InfoboardButton(index, name, null, new TextIcon(name));
-                application.getMenuRegistry().getCurrentMenu().getButtons().add(boardButton);
-                application.getMenuRegistry().updateMenu();
+                final InfoboardButton boardButton = new InfoboardButton(name, null, new TextIcon(name));
+                application.getMenuRenderer().getCurrentMenu().getButtons().put(index, boardButton);
+                application.getMenuRenderer().updateMenu();
             });
             popupMenu.add(createButton);
 
@@ -214,31 +204,22 @@ public class InfoboardFrame extends JFrame {
         }
     }
 
-    public void addButton(final InfoboardButton button) {
-        final JButton frameButton = buttonMap.get(button.getIndex());
+    public void renderButton(final int index, final InfoboardButton button) {
+        final JButton frameButton = buttonMap.get(index);
         if (frameButton == null) throw new IllegalStateException("button out of index");
 
         frameButton.setText(button.getName());
-        frameButton.addActionListener(e -> {
-            final AbstractButtonAction action = button.getAction();
-            if (action == null) return;
-
-            action.run(application);
-        });
+        frameButton.addActionListener(e -> button.getActions().forEach(action -> action.run(application)));
 
         // Override popup menu
         final JPopupMenu popupMenu = new JPopupMenu();
 
         final JMenuItem editName = new JMenuItem("Name ändern");
         editName.addActionListener(e -> {
-            final String name = JOptionPane.showInputDialog(
-                    this,
-                    "Neuen Namen eingeben",
-                    "Namen ändern",
-                    JOptionPane.PLAIN_MESSAGE);
+            final String name = JOptionPane.showInputDialog(this, "Neuen Namen eingeben", "Namen ändern", JOptionPane.PLAIN_MESSAGE);
 
             button.setName(name);
-            addButton(button);
+            renderButton(index, button);
         });
 
         popupMenu.add(editName);
@@ -247,8 +228,8 @@ public class InfoboardFrame extends JFrame {
         editIcon.addActionListener(e -> new ButtonIconFrame(this, application, button));
         popupMenu.add(editIcon);
 
-        final JMenuItem editAction = new JMenuItem("Aktion ändern");
-        editAction.addActionListener(e -> new ButtonActionFrame(this, application, button));
+        final JMenuItem editAction = new JMenuItem("Aktionen ändern");
+        editAction.addActionListener(e -> new ButtonActionsFrame(this, application, button));
         popupMenu.add(editAction);
 
         popupMenu.addSeparator();
@@ -256,17 +237,16 @@ public class InfoboardFrame extends JFrame {
         final JMenuItem copyButton = new JMenuItem("Button kopieren");
         copyButton.addActionListener(e -> {
             clipboardButton = button;
-            application.getMenuRegistry().updateMenu();
+            application.getMenuRenderer().updateMenu();
         });
         popupMenu.add(copyButton);
 
         final JMenuItem deleteButton = new JMenuItem("Button löschen");
         deleteButton.addActionListener(e -> {
-            application.getMenuRegistry().getCurrentMenu().getButtons().remove(button);
-            application.getMenuRegistry().updateMenu();
+            application.getMenuRenderer().getCurrentMenu().getButtons().values().remove(button);
+            application.getMenuRenderer().updateMenu();
         });
         popupMenu.add(deleteButton);
-
 
         frameButton.setComponentPopupMenu(popupMenu);
     }
@@ -314,25 +294,33 @@ public class InfoboardFrame extends JFrame {
             boolean accept = false;
             if (canImport(support)) {
                 try {
-                    Transferable t = support.getTransferable();
-                    Object value = t.getTransferData(SUPPORTED_DATE_FLAVOR);
+                    final Transferable t = support.getTransferable();
+                    final Object value = t.getTransferData(SUPPORTED_DATE_FLAVOR);
                     if (value instanceof String) {
-                        Component component = support.getComponent();
+                        final Component component = support.getComponent();
                         if (component instanceof JButton) {
                             final int sourceIndex = Integer.parseInt(value.toString());
                             final int targetIndex = ((ButtonTransferHandler) ((JButton) component).getTransferHandler()).getIndex();
 
-                            for (final InfoboardButton button : application.getMenuRegistry().getCurrentMenu().getButtons()) {
-                                if (button.getIndex() == sourceIndex) button.setIndex(targetIndex);
+                            accept = true;
+
+                            final InfoboardButton targetButton = application.getMenuRenderer().getCurrentMenu().getButtons().get(targetIndex);
+                            if (targetButton != null) {
+                                final int override = JOptionPane.showConfirmDialog(application.getFrame(), "Auf dem Zielfeld befindet sich bereits ein Button. Möchtest du diesen überschreiben?", "Button überschreiben", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                                if (override == JOptionPane.NO_OPTION) {
+                                    accept = false;
+                                }
                             }
 
-                            application.getMenuRegistry().updateMenu();
-
-                            accept = true;
+                            if (accept) {
+                                final InfoboardButton sourceButton = application.getMenuRenderer().getCurrentMenu().getButtons().remove(sourceIndex);
+                                application.getMenuRenderer().getCurrentMenu().getButtons().put(targetIndex, sourceButton);
+                                application.getMenuRenderer().updateMenu();
+                            }
                         }
                     }
-                } catch (Exception exp) {
-                    exp.printStackTrace();
+                } catch (final Exception e) {
+                    log.error("Error while handling transfer", e);
                 }
             }
             return accept;

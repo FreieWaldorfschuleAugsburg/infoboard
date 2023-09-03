@@ -43,11 +43,6 @@ public class StreamDeck {
     private static final byte[] CLEAR = new byte[]{0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     private static final byte[] RESET_TO_LOGO = new byte[]{0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-    private static final byte[] OTHER = new byte[]{0x0d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-            (byte) 0x8c, 0x4b, 0x61, (byte) 0xd6, 0x3f, 0x02, 0x00, 0x00,
-            0x08, 0x4d, 0x61, (byte) 0xd6, 0x3f, 0x02, 0x00, 0x00,
-            (byte) 0xe0, 0x70, 0x53, 0x74, (byte) 0xf7, 0x7f, 0x00, 0x00};
-
     private final HidDevice device;
     private final String firmwareVersion;
     private final Set<StreamDeckListener> listeners = new HashSet<>();
@@ -92,16 +87,16 @@ public class StreamDeck {
         }
     }
 
-    public void renderButton(final InfoboardButton button) {
+    public void renderButton(final int index, final InfoboardButton button) {
         BufferedImage image;
         try {
             image = button.getStreamDeckIcon().createImage();
         } catch (final IOException e) {
-            log.error("Error while creating icon for key {}", button.getIndex(), e);
+            log.error("Error while creating icon for key {}", index, e);
             return;
         }
 
-        renderImage(button.getIndex(), image);
+        renderImage(index, image);
     }
 
     public void renderImage(final int key, BufferedImage image) {
@@ -151,8 +146,6 @@ public class StreamDeck {
             final byte[] packet = packetStream.toByteArray();
             device.write(packet, packet.length, IMAGE_REPORT_ID);
         }
-
-        //device.sendFeatureReport(OTHER, PRIMARY_REPORT_ID);
     }
 
     public void setBrightness(final int percentage) {

@@ -1,16 +1,13 @@
 package de.waldorfaugsburg.infoboard.config.action;
 
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
-import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
-import de.waldorfaugsburg.infoboard.window.ButtonActionFrame;
+import de.waldorfaugsburg.infoboard.window.ButtonActionsFrame;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ItemEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.UUID;
 
 @Slf4j
 public class OpenFileAction extends AbstractButtonAction {
@@ -31,23 +28,24 @@ public class OpenFileAction extends AbstractButtonAction {
     }
 
     @Override
-    public void createSettingsForm(final InfoboardApplication application, final ButtonActionFrame frame, final JPanel contentPane) {
+    public void createSettingsForm(final InfoboardApplication application, final ButtonActionsFrame frame, final JPanel contentPane) {
         final JLabel pathLabel = new JLabel("Pfad");
-        pathLabel.setBounds(0, 6, 46, 14);
+        pathLabel.setBounds(0, 4, 46, 14);
         contentPane.add(pathLabel);
 
         final JTextField pathField = new JTextField(10);
-        pathField.setBounds(56, 0, 280, 26);
+        pathField.setBounds(34, 1, 195, 20);
         pathField.setText(path);
         pathField.addActionListener(e -> {
             final File file = new File(pathField.getText());
 
             path = file.getAbsolutePath();
+            frame.updateList();
         });
         contentPane.add(pathField);
 
         final JButton searchButton = new JButton("Durchsuchen...");
-        searchButton.setBounds(346, 0, 109, 26);
+        searchButton.setBounds(235, 0, 107, 23);
         searchButton.addActionListener(e -> {
             final JFileChooser fileChooser = new JFileChooser();
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -57,8 +55,14 @@ public class OpenFileAction extends AbstractButtonAction {
 
                 path = selectedFile.getAbsolutePath();
                 pathField.setText(path);
+                frame.updateList();
             }
         });
         contentPane.add(searchButton);
+    }
+
+    @Override
+    public String getDescription(final InfoboardApplication application) {
+        return getType().getName() + ": " + path;
     }
 }

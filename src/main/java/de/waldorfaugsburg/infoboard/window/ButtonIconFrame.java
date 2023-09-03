@@ -2,7 +2,6 @@ package de.waldorfaugsburg.infoboard.window;
 
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
-import de.waldorfaugsburg.infoboard.config.action.ButtonActionType;
 import de.waldorfaugsburg.infoboard.config.icon.StreamDeckIconType;
 
 import javax.swing.*;
@@ -92,6 +91,6 @@ public class ButtonIconFrame extends JDialog {
         } catch (final IOException e) {
             iconLabel.setText(e.getMessage());
         }
-        application.getMenuRegistry().updateMenu();
+        application.getMenuRenderer().updateMenu();
     }
 }

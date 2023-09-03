@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Getter
@@ -13,5 +13,5 @@ import java.util.UUID;
 public class InfoboardMenu {
     private UUID id;
     private String name;
-    private List<InfoboardButton> buttons;
+    private Map<Integer, InfoboardButton> buttons;
 }

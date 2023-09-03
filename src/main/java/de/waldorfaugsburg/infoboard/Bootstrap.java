@@ -3,7 +3,7 @@ package de.waldorfaugsburg.infoboard;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Boostrap {
+public class Bootstrap {
 
     public static void main(final String[] args) {
         final InfoboardApplication application = new InfoboardApplication();

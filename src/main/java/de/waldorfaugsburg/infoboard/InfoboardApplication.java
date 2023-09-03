@@ -2,13 +2,11 @@ package de.waldorfaugsburg.infoboard;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 import de.waldorfaugsburg.infoboard.config.InfoboardConfiguration;
 import de.waldorfaugsburg.infoboard.config.JsonAdapter;
 import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
 import de.waldorfaugsburg.infoboard.config.icon.AbstractStreamDeckIcon;
-import de.waldorfaugsburg.infoboard.menu.MenuRegistry;
+import de.waldorfaugsburg.infoboard.menu.MenuRenderer;
 import de.waldorfaugsburg.infoboard.streamdeck.StreamDeck;
 import de.waldorfaugsburg.infoboard.window.InfoboardFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +16,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -30,7 +29,7 @@ public class InfoboardApplication {
     private InfoboardFrame frame;
     private StreamDeck streamDeck;
 
-    private MenuRegistry menuRegistry;
+    private MenuRenderer menuRenderer;
 
     public void startup() {
         try {
@@ -46,20 +45,18 @@ public class InfoboardApplication {
             System.exit(1);
         }
 
-        menuRegistry = new MenuRegistry(this);
+        menuRenderer = new MenuRenderer(this);
 
         // Create infoboard window
         frame = new InfoboardFrame(this, configuration.isProduction());
 
         // Only initialize stream deck if in production
         if (configuration.isProduction()) {
-            // TODO put this back
+            initializeStreamDeck();
         }
 
-        initializeStreamDeck();
-
         // Open main menu
-        menuRegistry.changeMenu(configuration.getMainMenu());
+        menuRenderer.changeMenu(configuration.getMainMenu());
     }
 
     private void initializeStreamDeck() {
@@ -68,7 +65,9 @@ public class InfoboardApplication {
     }
 
     public void shutdown() {
-        streamDeck.close();
+        if (streamDeck != null) {
+            streamDeck.close();
+        }
     }
 
     public InfoboardConfiguration getConfiguration() {
@@ -81,14 +80,14 @@ public class InfoboardApplication {
 
     private InfoboardConfiguration readConfiguration() throws IOException {
         final InfoboardConfiguration config;
-        try (final FileReader reader = new FileReader("config.json")) {
+        try (final FileReader reader = new FileReader("config.json", StandardCharsets.UTF_8)) {
             config = gson.fromJson(reader, InfoboardConfiguration.class);
         }
         return config;
     }
 
     public void saveConfiguration(final File path) {
-        try (final FileWriter writer = new FileWriter(path)) {
+        try (final FileWriter writer = new FileWriter(path, StandardCharsets.UTF_8)) {
             gson.toJson(configuration, InfoboardConfiguration.class, writer);
         } catch (final IOException e) {
             log.error("Error while saving configuration");
@@ -119,7 +118,7 @@ public class InfoboardApplication {
         return streamDeck;
     }
 
-    public MenuRegistry getMenuRegistry() {
-        return menuRegistry;
+    public MenuRenderer getMenuRenderer() {
+        return menuRenderer;
     }
 }

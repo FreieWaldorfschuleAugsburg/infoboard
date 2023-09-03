@@ -4,12 +4,22 @@ import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
 import de.waldorfaugsburg.infoboard.config.icon.AbstractStreamDeckIcon;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class InfoboardButton {
-    private int index;
     private String name;
-    private AbstractButtonAction action;
+    private List<AbstractButtonAction> actions;
     private AbstractStreamDeckIcon streamDeckIcon;
+
+    public List<AbstractButtonAction> getActions() {
+        if (actions == null) {
+            actions = new ArrayList<>();
+        }
+
+        return actions;
+    }
 }
