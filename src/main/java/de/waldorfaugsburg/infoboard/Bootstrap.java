@@ -19,7 +19,7 @@ public class Bootstrap {
 
         // Run application
         try {
-            application.startup();
+            application.startup(args);
         } catch (final Exception e) {
             log.error("Unhandled exception occurred on startup", e);
         }

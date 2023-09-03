@@ -97,6 +97,7 @@ public class InfoboardFrame extends JFrame {
         final JMenuItem saveItem = new JMenuItem("Speichern");
         saveItem.addActionListener(e -> application.saveConfiguration());
 
+
         final JMenuItem saveAsItem = new JMenuItem("Speichern unter ...");
         saveAsItem.addActionListener(e -> {
             final JFileChooser fileChooser = new JFileChooser();
@@ -108,11 +109,15 @@ public class InfoboardFrame extends JFrame {
             }
         });
 
+        final JMenuItem updateItem = new JMenuItem("Anzeige aktualisieren");
+        updateItem.addActionListener(e -> application.reloadHttpTarget());
+
         final JMenuItem exitItem = new JMenuItem("Beenden");
         exitItem.addActionListener(e -> System.exit(0));
 
         fileMenu.add(saveItem);
         fileMenu.add(saveAsItem);
+        fileMenu.add(updateItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
 
@@ -139,7 +144,7 @@ public class InfoboardFrame extends JFrame {
     }
 
     public void clear() {
-        if (!application.getConfiguration().isProduction()) {
+        if (!application.isProduction()) {
             updateMenuBar();
         }
 

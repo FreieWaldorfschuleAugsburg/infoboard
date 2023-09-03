@@ -6,6 +6,7 @@ import de.waldorfaugsburg.infoboard.config.InfoboardConfiguration;
 import de.waldorfaugsburg.infoboard.config.JsonAdapter;
 import de.waldorfaugsburg.infoboard.config.action.AbstractButtonAction;
 import de.waldorfaugsburg.infoboard.config.icon.AbstractStreamDeckIcon;
+import de.waldorfaugsburg.infoboard.http.HTTPServer;
 import de.waldorfaugsburg.infoboard.menu.MenuRenderer;
 import de.waldorfaugsburg.infoboard.streamdeck.StreamDeck;
 import de.waldorfaugsburg.infoboard.window.InfoboardFrame;
@@ -16,6 +17,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,15 +28,19 @@ import java.nio.file.Path;
 @Slf4j
 public class InfoboardApplication {
 
+    private static final String CONFIGURATION_PATH = "config.json";
+
     private final Gson gson = new GsonBuilder().registerTypeAdapter(AbstractButtonAction.class, new JsonAdapter<AbstractButtonAction>()).registerTypeAdapter(AbstractStreamDeckIcon.class, new JsonAdapter<AbstractStreamDeckIcon>()).setPrettyPrinting().create();
 
+    private boolean production;
     private InfoboardConfiguration configuration;
     private InfoboardFrame frame;
     private StreamDeck streamDeck;
-
     private MenuRenderer menuRenderer;
 
-    public void startup() {
+    public void startup(final String[] args) {
+        production = args.length == 1 && args[0].equals("prod");
+
         try {
             configuration = readConfiguration();
         } catch (final IOException e) {
@@ -46,12 +55,13 @@ public class InfoboardApplication {
         }
 
         menuRenderer = new MenuRenderer(this);
+        new HTTPServer(this);
 
         // Create infoboard window
-        frame = new InfoboardFrame(this, configuration.isProduction());
+        frame = new InfoboardFrame(this, production);
 
         // Only initialize stream deck if in production
-        if (configuration.isProduction()) {
+        if (production) {
             initializeStreamDeck();
         }
 
@@ -70,17 +80,40 @@ public class InfoboardApplication {
         }
     }
 
+    public void reload() {
+        try {
+            configuration = readConfiguration();
+        } catch (final IOException e) {
+            log.error("Error loading configuration", e);
+        }
+
+        menuRenderer.changeMenu(configuration.getMainMenu());
+    }
+
+    public void reloadHttpTarget() {
+        final HttpClient client = HttpClient.newHttpClient();
+        final HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(configuration.getHttpTarget()))
+                .build();
+
+        try {
+            client.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (final IOException | InterruptedException e) {
+            log.error("Error while requesting target url {}", configuration.getHttpTarget(), e);
+        }
+    }
+
     public InfoboardConfiguration getConfiguration() {
         return configuration;
     }
 
     public void saveConfiguration() {
-        saveConfiguration(new File("config.json"));
+        saveConfiguration(new File(CONFIGURATION_PATH));
     }
 
     private InfoboardConfiguration readConfiguration() throws IOException {
         final InfoboardConfiguration config;
-        try (final FileReader reader = new FileReader("config.json", StandardCharsets.UTF_8)) {
+        try (final FileReader reader = new FileReader(CONFIGURATION_PATH, StandardCharsets.UTF_8)) {
             config = gson.fromJson(reader, InfoboardConfiguration.class);
         }
         return config;
@@ -96,7 +129,7 @@ public class InfoboardApplication {
 
     public boolean hasConfigurationChanged() {
         try {
-            final String configurationContent = Files.readString(Path.of("config.json"));
+            final String configurationContent = Files.readString(Path.of(CONFIGURATION_PATH));
             final String newConfigurationContent = gson.toJson(configuration);
 
             return !configurationContent.equals(newConfigurationContent);
@@ -104,6 +137,10 @@ public class InfoboardApplication {
         }
 
         return false;
+    }
+
+    public boolean isProduction() {
+        return production;
     }
 
     public Gson getGson() {

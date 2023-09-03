@@ -11,7 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class InfoboardConfiguration {
     @Getter
-    private boolean production;
+    private int httpPort;
+    @Getter
+    private String httpTarget;
     @Getter
     private String streamDeckSerial;
     @Setter
