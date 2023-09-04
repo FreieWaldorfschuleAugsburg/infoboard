@@ -7,9 +7,6 @@ import de.waldorfaugsburg.infoboard.config.action.ButtonActionType;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.text.Position;
 import java.awt.*;
 
 public class ButtonActionsFrame extends JDialog {
@@ -102,9 +99,9 @@ public class ButtonActionsFrame extends JDialog {
         contentPane.add(actionTitle);
 
         actionPane = new JPanel();
-        actionPane.setBounds(232, 38, 342, 22);
-        contentPane.add(actionPane);
+        actionPane.setBounds(232, 38, 342, 50);
         actionPane.setLayout(null);
+        contentPane.add(actionPane);
 
         setVisible(true);
     }

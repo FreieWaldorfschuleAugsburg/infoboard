@@ -13,6 +13,7 @@ import java.io.IOException;
 public class OpenFileAction extends AbstractButtonAction {
 
     private String path;
+    private String arguments;
 
     protected OpenFileAction() {
         super(ButtonActionType.OPEN_FILE);
@@ -21,7 +22,7 @@ public class OpenFileAction extends AbstractButtonAction {
     @Override
     public void run(final InfoboardApplication application) {
         try {
-            Desktop.getDesktop().open(new File(path));
+            Runtime.getRuntime().exec("cmd /c start \"\" \"" + path + "\" " + arguments);
         } catch (final IOException e) {
             log.error("Error while opening file {}", path, e);
         }
@@ -29,6 +30,16 @@ public class OpenFileAction extends AbstractButtonAction {
 
     @Override
     public void createSettingsForm(final InfoboardApplication application, final ButtonActionsFrame frame, final JPanel contentPane) {
+        final JLabel argumentsLabel = new JLabel("Argumente");
+        argumentsLabel.setBounds(0, 25, 53, 14);
+        contentPane.add(argumentsLabel);
+
+        final JTextField argumentsField = new JTextField(10);
+        argumentsField.setBounds(63, 25, 166, 20);
+        argumentsField.setText(arguments);
+        argumentsField.addActionListener(e -> arguments = argumentsField.getText());
+        contentPane.add(argumentsField);
+
         final JLabel pathLabel = new JLabel("Pfad");
         pathLabel.setBounds(0, 4, 46, 14);
         contentPane.add(pathLabel);
@@ -40,6 +51,8 @@ public class OpenFileAction extends AbstractButtonAction {
             final File file = new File(pathField.getText());
 
             path = file.getAbsolutePath();
+            arguments = argumentsField.getText();
+
             frame.updateList();
         });
         contentPane.add(pathField);
@@ -54,6 +67,8 @@ public class OpenFileAction extends AbstractButtonAction {
                 final File selectedFile = fileChooser.getSelectedFile();
 
                 path = selectedFile.getAbsolutePath();
+                arguments = argumentsField.getText();
+
                 pathField.setText(path);
                 frame.updateList();
             }

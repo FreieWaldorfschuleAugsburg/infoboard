@@ -6,7 +6,8 @@ public enum ButtonActionType {
 
     MENU_CHANGE("Menü wechseln", MenuChangeAction::new),
     OPEN_FILE("Datei öffnen", OpenFileAction::new),
-    KILL_PROCESS("Prozess beenden", KillProcessAction::new);
+    KILL_PROCESS("Prozess beenden", KillProcessAction::new),
+    KEYPRESS("Tastendruck", KeypressAction::new);
 
     private final String name;
     private final Supplier<AbstractButtonAction> supplier;

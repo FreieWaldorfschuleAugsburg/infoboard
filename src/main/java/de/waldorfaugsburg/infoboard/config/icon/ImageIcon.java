@@ -69,6 +69,7 @@ public class ImageIcon extends AbstractStreamDeckIcon {
             }
 
             path = file.getAbsolutePath();
+            frame.updateImage();
         });
         contentPane.add(pathField);
 
