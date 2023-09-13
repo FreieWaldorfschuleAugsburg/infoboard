@@ -6,6 +6,7 @@ public enum ButtonActionType {
 
     MENU_CHANGE("Menü wechseln", MenuChangeAction::new),
     OPEN_FILE("Datei öffnen", OpenFileAction::new),
+    OPEN_URL("URL öffnen", OpenUrlAction::new),
     KILL_PROCESS("Prozess beenden", KillProcessAction::new),
     KEYPRESS("Tastendruck", KeypressAction::new);
 

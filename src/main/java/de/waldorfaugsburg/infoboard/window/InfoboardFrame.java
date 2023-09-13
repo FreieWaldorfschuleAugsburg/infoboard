@@ -307,7 +307,8 @@ public class InfoboardFrame extends JFrame {
                             final int sourceIndex = Integer.parseInt(value.toString());
                             final int targetIndex = ((ButtonTransferHandler) ((JButton) component).getTransferHandler()).getIndex();
 
-                            accept = true;
+                            // If source is equal to target we don't do anything
+                            accept = sourceIndex != targetIndex;
 
                             final InfoboardButton targetButton = application.getMenuRenderer().getCurrentMenu().getButtons().get(targetIndex);
                             if (targetButton != null) {
