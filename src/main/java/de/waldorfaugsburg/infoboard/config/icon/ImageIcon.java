@@ -76,8 +76,7 @@ public class ImageIcon extends AbstractStreamDeckIcon {
         final JButton searchButton = new JButton("Durchsuchen...");
         searchButton.setBounds(346, 0, 109, 26);
         searchButton.addActionListener(e -> {
-            final JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            final JFileChooser fileChooser = new JFileChooser(frame.getApplication().getLastFileChooserPath());
             final int result = fileChooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 final File selectedFile = fileChooser.getSelectedFile();
@@ -85,6 +84,8 @@ public class ImageIcon extends AbstractStreamDeckIcon {
                     displayImageError(frame);
                     return;
                 }
+
+                frame.getApplication().setLastFileChooserPath(selectedFile.getParentFile().getAbsolutePath());
 
                 path = selectedFile.getAbsolutePath();
                 pathField.setText(path);

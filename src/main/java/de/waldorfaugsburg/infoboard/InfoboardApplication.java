@@ -38,6 +38,8 @@ public class InfoboardApplication {
     private StreamDeck streamDeck;
     private MenuRenderer menuRenderer;
 
+    private String lastFileChooserPath;
+
     public void startup(final String[] args) {
         production = args.length == 1 && args[0].equals("prod");
 
@@ -92,9 +94,7 @@ public class InfoboardApplication {
 
     public void reloadHttpTarget() {
         final HttpClient client = HttpClient.newHttpClient();
-        final HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(configuration.getHttpTarget()))
-                .build();
+        final HttpRequest request = HttpRequest.newBuilder().uri(URI.create(configuration.getHttpTarget())).build();
 
         try {
             client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -137,6 +137,14 @@ public class InfoboardApplication {
         }
 
         return false;
+    }
+
+    public String getLastFileChooserPath() {
+        return lastFileChooserPath != null ? lastFileChooserPath : System.getProperty("user.home");
+    }
+
+    public void setLastFileChooserPath(final String lastFileChooserPath) {
+        this.lastFileChooserPath = lastFileChooserPath;
     }
 
     public boolean isProduction() {

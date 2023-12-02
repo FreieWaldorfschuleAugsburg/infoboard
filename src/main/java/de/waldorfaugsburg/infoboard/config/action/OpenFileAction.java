@@ -60,14 +60,15 @@ public class OpenFileAction extends AbstractButtonAction {
         final JButton searchButton = new JButton("Durchsuchen...");
         searchButton.setBounds(235, 0, 107, 23);
         searchButton.addActionListener(e -> {
-            final JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
+            final JFileChooser fileChooser = new JFileChooser(application.getLastFileChooserPath());
             final int result = fileChooser.showOpenDialog(frame);
             if (result == JFileChooser.APPROVE_OPTION) {
                 final File selectedFile = fileChooser.getSelectedFile();
 
                 path = selectedFile.getAbsolutePath();
                 arguments = argumentsField.getText();
+
+                application.setLastFileChooserPath(selectedFile.getParentFile().getAbsolutePath());
 
                 pathField.setText(path);
                 frame.updateList();

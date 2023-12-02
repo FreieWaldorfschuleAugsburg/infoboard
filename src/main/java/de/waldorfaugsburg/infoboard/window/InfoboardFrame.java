@@ -100,12 +100,14 @@ public class InfoboardFrame extends JFrame {
 
         final JMenuItem saveAsItem = new JMenuItem("Speichern unter ...");
         saveAsItem.addActionListener(e -> {
-            final JFileChooser fileChooser = new JFileChooser();
+            final JFileChooser fileChooser = new JFileChooser(application.getLastFileChooserPath());
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
             final int result = fileChooser.showOpenDialog(this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 final File selectedFile = fileChooser.getSelectedFile();
                 application.saveConfiguration(selectedFile);
+
+                application.setLastFileChooserPath(selectedFile.getParentFile().getAbsolutePath());
             }
         });
 

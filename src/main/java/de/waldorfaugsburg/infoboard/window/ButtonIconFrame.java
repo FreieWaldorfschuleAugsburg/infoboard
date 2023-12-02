@@ -93,4 +93,8 @@ public class ButtonIconFrame extends JDialog {
         }
         application.getMenuRenderer().updateMenu();
     }
+
+    public InfoboardApplication getApplication() {
+        return application;
+    }
 }
