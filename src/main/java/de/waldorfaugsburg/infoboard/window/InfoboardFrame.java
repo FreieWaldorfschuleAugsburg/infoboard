@@ -296,7 +296,6 @@ public class InfoboardFrame extends JFrame {
 
         @Override
         public boolean importData(final TransferSupport support) {
-            boolean accept = false;
             if (canImport(support)) {
                 try {
                     final Transferable t = support.getTransferable();
@@ -308,28 +307,28 @@ public class InfoboardFrame extends JFrame {
                             final int targetIndex = ((ButtonTransferHandler) ((JButton) component).getTransferHandler()).getIndex();
 
                             // If source is equal to target we don't do anything
-                            accept = sourceIndex != targetIndex;
+                            if (sourceIndex == targetIndex) {
+                                return false;
+                            }
 
                             final InfoboardButton targetButton = application.getMenuRenderer().getCurrentMenu().getButtons().get(targetIndex);
                             if (targetButton != null) {
                                 final int override = JOptionPane.showConfirmDialog(application.getFrame(), "Auf dem Zielfeld befindet sich bereits ein Button. Möchtest du diesen überschreiben?", "Button überschreiben", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                                 if (override == JOptionPane.NO_OPTION) {
-                                    accept = false;
+                                    return false;
                                 }
                             }
 
-                            if (accept) {
-                                final InfoboardButton sourceButton = application.getMenuRenderer().getCurrentMenu().getButtons().remove(sourceIndex);
-                                application.getMenuRenderer().getCurrentMenu().getButtons().put(targetIndex, sourceButton);
-                                application.getMenuRenderer().updateMenu();
-                            }
+                            final InfoboardButton sourceButton = application.getMenuRenderer().getCurrentMenu().getButtons().remove(sourceIndex);
+                            application.getMenuRenderer().getCurrentMenu().getButtons().put(targetIndex, sourceButton);
+                            application.getMenuRenderer().updateMenu();
                         }
                     }
                 } catch (final Exception e) {
                     log.error("Error while handling transfer", e);
                 }
             }
-            return accept;
+            return true;
         }
     }
 }
