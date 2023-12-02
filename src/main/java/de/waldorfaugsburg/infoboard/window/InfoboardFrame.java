@@ -221,7 +221,7 @@ public class InfoboardFrame extends JFrame {
 
         final JMenuItem editName = new JMenuItem("Name ändern");
         editName.addActionListener(e -> {
-            final String name = JOptionPane.showInputDialog(this, "Neuen Namen eingeben", "Namen ändern", JOptionPane.PLAIN_MESSAGE);
+            final String name = (String) JOptionPane.showInputDialog(this, "Neuen Namen eingeben", "Namen ändern", JOptionPane.PLAIN_MESSAGE, null, null, button.getName());
 
             button.setName(name);
             renderButton(index, button);
