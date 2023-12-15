@@ -9,7 +9,9 @@ public enum ButtonActionType {
     OPEN_URL("URL öffnen", OpenUrlAction::new),
     KILL_PROCESS("Prozess beenden", KillProcessAction::new),
     KEYPRESS("Tastendruck", KeypressAction::new),
-    BRIGHTNESS("Helligkeit", BrightnessAction::new);
+    BRIGHTNESS("Helligkeit", BrightnessAction::new),
+    MINIMIZE("Minimieren", MinimizeAction::new),
+    MAXIMIZE("Maximieren", MaximizeAction::new);
 
     private final String name;
     private final Supplier<AbstractButtonAction> supplier;
