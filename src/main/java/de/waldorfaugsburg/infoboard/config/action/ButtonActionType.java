@@ -8,7 +8,8 @@ public enum ButtonActionType {
     OPEN_FILE("Datei öffnen", OpenFileAction::new),
     OPEN_URL("URL öffnen", OpenUrlAction::new),
     KILL_PROCESS("Prozess beenden", KillProcessAction::new),
-    KEYPRESS("Tastendruck", KeypressAction::new);
+    KEYPRESS("Tastendruck", KeypressAction::new),
+    BRIGHTNESS("Helligkeit", BrightnessAction::new);
 
     private final String name;
     private final Supplier<AbstractButtonAction> supplier;
