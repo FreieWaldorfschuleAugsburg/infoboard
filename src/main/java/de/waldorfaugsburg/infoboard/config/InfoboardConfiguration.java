@@ -15,6 +15,10 @@ public class InfoboardConfiguration {
     @Getter
     private String httpTarget;
     @Getter
+    private String monitorAddress;
+    @Getter
+    private String monitorHardwareAddress;
+    @Getter
     private String streamDeckSerial;
     @Setter
     private UUID mainMenu;
