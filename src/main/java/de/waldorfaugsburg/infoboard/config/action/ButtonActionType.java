@@ -11,7 +11,9 @@ public enum ButtonActionType {
     KEYPRESS("Tastendruck", KeypressAction::new),
     BRIGHTNESS("Helligkeit", BrightnessAction::new),
     MINIMIZE("Minimieren", MinimizeAction::new),
-    MAXIMIZE("Maximieren", MaximizeAction::new);
+    MAXIMIZE("Maximieren", MaximizeAction::new),
+    MONITOR_WAKE("Monitor wecken", MonitorWakeAction::new),
+    MONITOR_SLEEP("Monitor abschalten", MonitorSleepAction::new);
 
     private final String name;
     private final Supplier<AbstractButtonAction> supplier;
