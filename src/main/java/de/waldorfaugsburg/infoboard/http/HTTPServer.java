@@ -11,7 +11,7 @@ public class HTTPServer {
 
     public HTTPServer(final InfoboardApplication application) {
         this.application = application;
-        this.server = Javalin.create(config -> config.jsonMapper(new JavalinGson(application.getGson()))).start(application.getConfiguration().getHttpPort());
+        this.server = Javalin.create(config -> config.jsonMapper(new JavalinGson(application.getGson(), true))).start(application.getConfiguration().getHttpPort());
         registerRoutes();
     }
 

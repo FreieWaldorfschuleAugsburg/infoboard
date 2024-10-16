@@ -19,6 +19,8 @@ public class InfoboardConfiguration {
     @Getter
     private String monitorHardwareAddress;
     @Getter
+    private String monitorSleepWebhook;
+    @Getter
     private String streamDeckSerial;
     @Setter
     private UUID mainMenu;
