@@ -10,9 +10,13 @@ import de.waldorfaugsburg.infoboard.http.HTTPServer;
 import de.waldorfaugsburg.infoboard.menu.MenuRenderer;
 import de.waldorfaugsburg.infoboard.streamdeck.StreamDeck;
 import de.waldorfaugsburg.infoboard.window.InfoboardFrame;
+import de.waldorfaugsburg.infoboard.window.PromptFrame;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
+import java.awt.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -30,14 +34,21 @@ public class InfoboardApplication {
 
     private static final String CONFIGURATION_PATH = "config.json";
 
+    @Getter
     private final Gson gson = new GsonBuilder().registerTypeAdapter(AbstractButtonAction.class, new JsonAdapter<AbstractButtonAction>()).registerTypeAdapter(AbstractStreamDeckIcon.class, new JsonAdapter<AbstractStreamDeckIcon>()).setPrettyPrinting().create();
 
+    @Getter
     private boolean production;
+    @Getter
     private InfoboardConfiguration configuration;
+    @Getter
     private InfoboardFrame frame;
+    @Getter
     private StreamDeck streamDeck;
+    @Getter
     private MenuRenderer menuRenderer;
 
+    @Setter
     private String lastFileChooserPath;
 
     public void startup(final String[] args) {
@@ -59,7 +70,7 @@ public class InfoboardApplication {
         menuRenderer = new MenuRenderer(this);
         new HTTPServer(this);
 
-        // Create infoboard window
+        // Create window
         frame = new InfoboardFrame(this, production);
 
         // Only initialize stream deck if in production
@@ -103,10 +114,6 @@ public class InfoboardApplication {
         }
     }
 
-    public InfoboardConfiguration getConfiguration() {
-        return configuration;
-    }
-
     public void saveConfiguration() {
         saveConfiguration(new File(CONFIGURATION_PATH));
     }
@@ -143,27 +150,7 @@ public class InfoboardApplication {
         return lastFileChooserPath != null ? lastFileChooserPath : System.getProperty("user.home");
     }
 
-    public void setLastFileChooserPath(final String lastFileChooserPath) {
-        this.lastFileChooserPath = lastFileChooserPath;
-    }
-
-    public boolean isProduction() {
-        return production;
-    }
-
-    public Gson getGson() {
-        return gson;
-    }
-
-    public InfoboardFrame getFrame() {
-        return frame;
-    }
-
-    public StreamDeck getStreamDeck() {
-        return streamDeck;
-    }
-
-    public MenuRenderer getMenuRenderer() {
-        return menuRenderer;
+    public void displayPrompt(final String message, final Color textColor, final Color backgroundColor, final int seconds) {
+        new PromptFrame(frame, message, textColor, backgroundColor, seconds);
     }
 }

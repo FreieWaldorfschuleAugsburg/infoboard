@@ -21,10 +21,17 @@ public class OpenFileAction extends AbstractButtonAction {
 
     @Override
     public void run(final InfoboardApplication application) {
+        final File file = new File(path);
+        if (!file.exists()) {
+            application.displayPrompt("Die Zieldatei wurde nicht gefunden. Möglicherweise wurde sie umbennant oder verschoben! Wenden Sie sich bitte an den Betreuer des Infoboards.", Color.RED, Color.WHITE, 5);
+            log.error("Error opening non-existent file '{}'", path);
+            return;
+        }
+
         try {
             Runtime.getRuntime().exec("cmd /c start \"\" \"" + path + "\" " + arguments);
         } catch (final IOException e) {
-            log.error("Error while opening file {}", path, e);
+            log.error("Error while opening file '{}'", path, e);
         }
     }
 

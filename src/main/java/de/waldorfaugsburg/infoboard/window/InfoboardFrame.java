@@ -4,6 +4,7 @@ import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
 import de.waldorfaugsburg.infoboard.config.icon.TextIcon;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -93,12 +94,14 @@ public class InfoboardFrame extends JFrame {
 
         // File menu
         final JMenu fileMenu = new JMenu("Datei");
+        fileMenu.setMnemonic('D');
 
         final JMenuItem saveItem = new JMenuItem("Speichern");
+        saveItem.setMnemonic('S');
         saveItem.addActionListener(e -> application.saveConfiguration());
 
-
         final JMenuItem saveAsItem = new JMenuItem("Speichern unter ...");
+        saveAsItem.setMnemonic('u');
         saveAsItem.addActionListener(e -> {
             final JFileChooser fileChooser = new JFileChooser(application.getLastFileChooserPath());
             fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
@@ -112,9 +115,11 @@ public class InfoboardFrame extends JFrame {
         });
 
         final JMenuItem updateItem = new JMenuItem("Anzeige aktualisieren");
+        updateItem.setMnemonic('a');
         updateItem.addActionListener(e -> application.reloadHttpTarget());
 
         final JMenuItem exitItem = new JMenuItem("Beenden");
+        exitItem.setMnemonic('B');
         exitItem.addActionListener(e -> System.exit(0));
 
         fileMenu.add(saveItem);
@@ -125,6 +130,7 @@ public class InfoboardFrame extends JFrame {
 
         // Menu selector
         final JMenu menuSelector = new JMenu("Menü");
+        menuSelector.setMnemonic('M');
 
         final JMenuItem createMenuItem = new JMenuItem("Menüs verwalten...");
         createMenuItem.addActionListener(e -> new MenuManagementFrame(this, application));
@@ -140,6 +146,18 @@ public class InfoboardFrame extends JFrame {
 
         menuBar.add(fileMenu);
         menuBar.add(menuSelector);
+
+        // About menu
+        final JMenu aboutMenu = new JMenu("?");
+        aboutMenu.setMnemonic('?');
+
+        final JMenuItem infoItem = new JMenuItem("Info...");
+        infoItem.setMnemonic('I');
+        createMenuItem.addActionListener(e -> {
+        });
+        aboutMenu.add(infoItem);
+
+        menuBar.add(aboutMenu);
 
         // Add menubar to frame
         setJMenuBar(menuBar);
@@ -270,6 +288,7 @@ public class InfoboardFrame extends JFrame {
         model.setArmed(pressed);
     }
 
+    @Getter
     private class ButtonTransferHandler extends TransferHandler {
 
         public static final DataFlavor SUPPORTED_DATE_FLAVOR = DataFlavor.stringFlavor;
@@ -278,10 +297,6 @@ public class InfoboardFrame extends JFrame {
 
         public ButtonTransferHandler(final int index) {
             this.index = index;
-        }
-
-        public int getIndex() {
-            return index;
         }
 
         @Override

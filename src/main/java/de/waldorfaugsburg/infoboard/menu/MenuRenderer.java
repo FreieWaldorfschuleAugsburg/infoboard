@@ -4,6 +4,7 @@ import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
 import de.waldorfaugsburg.infoboard.config.InfoboardMenu;
 import de.waldorfaugsburg.infoboard.window.InfoboardFrame;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.UUID;
@@ -13,6 +14,7 @@ public class MenuRenderer {
 
     private final InfoboardApplication application;
 
+    @Getter
     private UUID currentMenuId;
 
     public MenuRenderer(final InfoboardApplication application) {
@@ -28,12 +30,15 @@ public class MenuRenderer {
     }
 
     public void changeMenu(final InfoboardMenu targetMenu) {
+        final InfoboardMenu lastMenu = application.getConfiguration().getMenu(currentMenuId);
+
+        // Change current menu id
         currentMenuId = targetMenu.getId();
 
         // Clear frame and update menubar
         application.getFrame().clear();
 
-        // Clear streamdeck if initialized
+        // Clear StreamDeck if initialized
         if (application.getStreamDeck() != null) {
             application.getStreamDeck().clear();
         }
@@ -49,10 +54,8 @@ public class MenuRenderer {
                 }
             }
         }
-    }
 
-    public UUID getCurrentMenuId() {
-        return currentMenuId;
+        log.info("Menu changed to '{}' from '{}'", targetMenu.getName(), lastMenu.getName());
     }
 
     public InfoboardMenu getCurrentMenu() {
