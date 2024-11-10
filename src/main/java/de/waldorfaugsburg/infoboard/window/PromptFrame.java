@@ -12,6 +12,7 @@ public class PromptFrame extends JDialog {
     private static final Border EMPTY_BORDER = BorderFactory.createEmptyBorder(10, 10, 10, 10);
 
     public PromptFrame(final JFrame parent,
+                       final String headline,
                        final String message,
                        final Color textColor,
                        final Color backgroundColor,
@@ -27,14 +28,14 @@ public class PromptFrame extends JDialog {
         contentPane.setBorder(EMPTY_BORDER);
 
         setContentPane(contentPane);
-        contentPane.setLayout(null);
+        contentPane.setLayout(new BorderLayout());
         contentPane.setBackground(backgroundColor);
 
-        final JLabel label = new JLabel(message);
-        label.setFont(new Font("Arial", Font.BOLD, 25));
+        final JLabel label = new JLabel("<html><center><h1>" + headline + "</h1><p>" + message + "</p></center></html>");
+        label.setFont(new Font("Arial", Font.PLAIN, 25));
         label.setForeground(textColor);
 
-        contentPane.add(label);
+        contentPane.add(label, BorderLayout.CENTER);
 
         setVisible(true);
 

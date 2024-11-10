@@ -150,7 +150,7 @@ public class InfoboardApplication {
         return lastFileChooserPath != null ? lastFileChooserPath : System.getProperty("user.home");
     }
 
-    public void displayPrompt(final String message, final Color textColor, final Color backgroundColor, final int seconds) {
-        new PromptFrame(frame, message, textColor, backgroundColor, seconds);
+    public void displayPrompt(final String headline, final String message, final Color textColor, final Color backgroundColor, final int seconds) {
+        new PromptFrame(frame, headline, message, textColor, backgroundColor, seconds);
     }
 }
