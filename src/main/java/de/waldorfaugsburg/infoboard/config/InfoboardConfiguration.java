@@ -1,5 +1,6 @@
 package de.waldorfaugsburg.infoboard.config;
 
+import de.waldorfaugsburg.infoboard.procurat.ProcuratClient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,6 +23,8 @@ public class InfoboardConfiguration {
     private String monitorSleepWebhook;
     @Getter
     private String streamDeckSerial;
+    @Getter
+    private ProcuratClientConfiguration procurat;
     @Setter
     private UUID mainMenu;
     private Map<UUID, InfoboardMenu> menus;
@@ -49,5 +52,12 @@ public class InfoboardConfiguration {
 
     public InfoboardMenu getMainMenu() {
         return getMenu(mainMenu);
+    }
+
+    @NoArgsConstructor
+    @Getter
+    public static class ProcuratClientConfiguration {
+        private String url;
+        private String apiKey;
     }
 }

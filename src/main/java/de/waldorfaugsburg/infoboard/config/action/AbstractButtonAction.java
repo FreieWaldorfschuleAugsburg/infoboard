@@ -2,9 +2,11 @@ package de.waldorfaugsburg.infoboard.config.action;
 
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
 import de.waldorfaugsburg.infoboard.window.ButtonActionsFrame;
+import lombok.Getter;
 
 import javax.swing.*;
 
+@Getter
 public abstract class AbstractButtonAction {
 
     private final ButtonActionType type;
@@ -19,7 +21,4 @@ public abstract class AbstractButtonAction {
 
     public abstract String getDescription(final InfoboardApplication application);
 
-    public ButtonActionType getType() {
-        return type;
-    }
 }
