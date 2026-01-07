@@ -10,6 +10,7 @@ import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,8 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class ImageIcon extends AbstractStreamDeckIcon {
+
+    private final static int ICON_SIZE = 72;
 
     private static final LoadingCache<String, BufferedImage> IMAGE_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.HOURS)
@@ -43,12 +46,19 @@ public class ImageIcon extends AbstractStreamDeckIcon {
             return BLANK;
         }
 
+        final BufferedImage image = new BufferedImage(ICON_SIZE, ICON_SIZE, BufferedImage.TYPE_INT_RGB);
+        final Graphics2D graphics = image.createGraphics();
+
         try {
-            return IMAGE_CACHE.get(path);
+            final BufferedImage cachedImage = IMAGE_CACHE.get(path);
+            graphics.drawImage(cachedImage, 0, 0, null);
+            graphics.dispose();
         } catch (final ExecutionException e) {
             log.error("Error occurred while loading image {}", path, e);
             return BLANK;
         }
+
+        return image;
     }
 
     @Override

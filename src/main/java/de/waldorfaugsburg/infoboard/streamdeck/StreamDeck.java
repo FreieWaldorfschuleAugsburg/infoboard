@@ -117,9 +117,35 @@ public class StreamDeck {
         }
 
         byte[] imageBytes = imageStream.toByteArray();
-        int remainingBytes = imageBytes.length;
 
-        // Slice image data into packets
+        int maxPacketSize = 1023;
+        int header = 7;
+        int maxPayloadSize = maxPacketSize - header;
+
+        int remainingBytes = imageBytes.length;
+        for (int part = 0; remainingBytes > 0 ; part++) {
+            byte[] packet = new byte[maxPacketSize];
+            int length = Math.min(remainingBytes, maxPayloadSize);
+            boolean isLast = remainingBytes <= maxPayloadSize;
+
+            packet[0] = 0x07;
+            packet[1] = (byte) key;
+            packet[2] = isLast ? (byte) 1 : 0;
+            packet[3] = (byte) (length+1);
+            packet[4] = (byte) (length+1 >> 8);
+            packet[5] = (byte) (part);
+            packet[6] = (byte) (part >> 8);
+
+            System.arraycopy(imageBytes, part * maxPayloadSize, packet, header, length);
+            // first part of the header is sent here as third argument
+            // yes that was confusing for me as well
+            System.out.println(device.write(packet, packet.length, (byte) 0x02, true));
+            System.out.println(device.getLastErrorMessage());
+            remainingBytes -= maxPayloadSize;
+        }
+
+        /* Slice image data into packets
+        int remainingBytes = imageBytes.length;
         for (int page = 0; remainingBytes > 0; page++) {
             final ByteArrayOutputStream packetStream = new ByteArrayOutputStream(MAX_PACKET_SIZE);
             final DataOutputStream packetDataStream = new DataOutputStream(packetStream);
@@ -145,7 +171,7 @@ public class StreamDeck {
 
             final byte[] packet = packetStream.toByteArray();
             device.write(packet, packet.length, IMAGE_REPORT_ID);
-        }
+        }*/
     }
 
     public void setBrightness(final int percentage) {
