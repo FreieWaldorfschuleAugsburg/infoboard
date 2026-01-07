@@ -10,6 +10,7 @@ import org.imgscalr.Scalr;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -29,8 +30,6 @@ public class ImageIcon extends AbstractStreamDeckIcon {
                 }
             });
 
-    private static final BufferedImage BLANK = new BufferedImage(StreamDeck.IMAGE_SIZE, StreamDeck.IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
-
     private String path;
 
     public ImageIcon() {
@@ -38,16 +37,17 @@ public class ImageIcon extends AbstractStreamDeckIcon {
     }
 
     @Override
-    public BufferedImage createImage() throws IOException {
+    public void render(final Graphics2D graphics) {
         if (path == null || path.isBlank()) {
-            return BLANK;
+            return;
         }
 
         try {
-            return IMAGE_CACHE.get(path);
+            final BufferedImage cachedImage = IMAGE_CACHE.get(path);
+            graphics.drawImage(cachedImage, 0, 0, null);
+            graphics.dispose();
         } catch (final ExecutionException e) {
             log.error("Error occurred while loading image {}", path, e);
-            return BLANK;
         }
     }
 

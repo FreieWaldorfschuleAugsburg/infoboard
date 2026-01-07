@@ -8,12 +8,14 @@ public enum ButtonActionType {
     OPEN_FILE("Datei öffnen", OpenFileAction::new),
     OPEN_URL("URL öffnen", OpenUrlAction::new),
     KILL_PROCESS("Prozess beenden", KillProcessAction::new),
+    CLOSE_DIALOGS("Dialoge schließen", CloseDialogsAction::new),
     KEYPRESS("Tastendruck", KeypressAction::new),
     BRIGHTNESS("Helligkeit", BrightnessAction::new),
     MINIMIZE("Minimieren", MinimizeAction::new),
     MAXIMIZE("Maximieren", MaximizeAction::new),
     MONITOR_WAKE("Monitor wecken", MonitorWakeAction::new),
-    MONITOR_SLEEP("Monitor abschalten", MonitorSleepAction::new);
+    MONITOR_SLEEP("Monitor abschalten", MonitorSleepAction::new),
+    PROCURAT_GROUP_TABLE("Procurat!5 Gruppe", ProcuratGroupTableAction::new);
 
     private final String name;
     private final Supplier<AbstractButtonAction> supplier;

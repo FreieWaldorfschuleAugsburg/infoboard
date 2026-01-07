@@ -1,6 +1,7 @@
 package de.waldorfaugsburg.infoboard.streamdeck;
 
 import de.waldorfaugsburg.infoboard.config.InfoboardButton;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.hid4java.*;
 import org.imgscalr.Scalr;
@@ -35,15 +36,17 @@ public class StreamDeck {
     private static final byte READ_SIZE = 19;
     private static final byte READ_START_INDEX = 4;
 
-    private static final int MAX_PACKET_SIZE = 1024;
-    private static final int PACKET_HEADER_LENGTH = 8;
+    private static final int MAX_PACKET_SIZE = 1023;
+    private static final int PACKET_HEADER_LENGTH = 7;
     private static final int MAX_PAYLOAD_SIZE = MAX_PACKET_SIZE - PACKET_HEADER_LENGTH;
 
     private static final Function<Integer, byte[]> BRIGHTNESS = percentage -> new byte[]{0x08, percentage.byteValue(), 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     private static final byte[] CLEAR = new byte[]{0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
     private static final byte[] RESET_TO_LOGO = new byte[]{0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x6d, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
+    @Getter
     private final HidDevice device;
+    @Getter
     private final String firmwareVersion;
     private final Set<StreamDeckListener> listeners = new HashSet<>();
 
@@ -116,35 +119,24 @@ public class StreamDeck {
             log.error("Error while writing to stream", e);
         }
 
-        byte[] imageBytes = imageStream.toByteArray();
+        final byte[] imageBytes = imageStream.toByteArray();
         int remainingBytes = imageBytes.length;
+        for (int part = 0; remainingBytes > 0; part++) {
+            final byte[] packet = new byte[MAX_PACKET_SIZE];
+            final int length = Math.min(remainingBytes, MAX_PAYLOAD_SIZE);
+            final boolean isLast = remainingBytes <= MAX_PAYLOAD_SIZE;
 
-        // Slice image data into packets
-        for (int page = 0; remainingBytes > 0; page++) {
-            final ByteArrayOutputStream packetStream = new ByteArrayOutputStream(MAX_PACKET_SIZE);
-            final DataOutputStream packetDataStream = new DataOutputStream(packetStream);
-            final int byteCount = Math.min(remainingBytes, MAX_PAYLOAD_SIZE);
+            packet[0] = 0x07;
+            packet[1] = (byte) key;
+            packet[2] = isLast ? (byte) 1 : 0;
+            packet[3] = (byte) (length + 1);
+            packet[4] = (byte) (length + 1 >> 8);
+            packet[5] = (byte) (part);
+            packet[6] = (byte) (part >> 8);
 
-            try {
-                packetDataStream.write(0x07);
-                packetDataStream.write(key);
-                packetDataStream.write(remainingBytes <= MAX_PAYLOAD_SIZE ? 1 : 0);
-                packetStream.write(byteCount & 0xFF);
-                packetStream.write(byteCount >> 8);
-                packetStream.write(page & 0xFF);
-                packetStream.write(page >> 8);
-
-                final int byteOffset = imageBytes.length - remainingBytes;
-                remainingBytes -= byteCount;
-
-                final byte[] part = Arrays.copyOfRange(imageBytes, byteOffset, byteOffset + byteCount);
-                packetDataStream.write(part);
-            } catch (final IOException e) {
-                log.error("Error while writing to stream", e);
-            }
-
-            final byte[] packet = packetStream.toByteArray();
-            device.write(packet, packet.length, IMAGE_REPORT_ID);
+            System.arraycopy(imageBytes, part * MAX_PAYLOAD_SIZE, packet, PACKET_HEADER_LENGTH, length);
+            device.write(packet, packet.length, IMAGE_REPORT_ID, true);
+            remainingBytes -= MAX_PAYLOAD_SIZE;
         }
     }
 
@@ -167,14 +159,6 @@ public class StreamDeck {
 
     public void addListener(final StreamDeckListener listener) {
         listeners.add(listener);
-    }
-
-    public HidDevice getDevice() {
-        return device;
-    }
-
-    public String getFirmwareVersion() {
-        return firmwareVersion;
     }
 
     private String readFeatureReportAsString(final byte reportId, final int length) {
