@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class ImageIcon extends AbstractStreamDeckIcon {
 
-    private final static int ICON_SIZE = 72;
-
     private static final LoadingCache<String, BufferedImage> IMAGE_CACHE = CacheBuilder.newBuilder()
             .expireAfterAccess(1, TimeUnit.HOURS)
             .build(new CacheLoader<>() {
@@ -32,8 +30,6 @@ public class ImageIcon extends AbstractStreamDeckIcon {
                 }
             });
 
-    private static final BufferedImage BLANK = new BufferedImage(StreamDeck.IMAGE_SIZE, StreamDeck.IMAGE_SIZE, BufferedImage.TYPE_INT_RGB);
-
     private String path;
 
     public ImageIcon() {
@@ -41,13 +37,10 @@ public class ImageIcon extends AbstractStreamDeckIcon {
     }
 
     @Override
-    public BufferedImage createImage() throws IOException {
+    public void render(final Graphics2D graphics) {
         if (path == null || path.isBlank()) {
-            return BLANK;
+            return;
         }
-
-        final BufferedImage image = new BufferedImage(ICON_SIZE, ICON_SIZE, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D graphics = image.createGraphics();
 
         try {
             final BufferedImage cachedImage = IMAGE_CACHE.get(path);
@@ -55,10 +48,7 @@ public class ImageIcon extends AbstractStreamDeckIcon {
             graphics.dispose();
         } catch (final ExecutionException e) {
             log.error("Error occurred while loading image {}", path, e);
-            return BLANK;
         }
-
-        return image;
     }
 
     @Override

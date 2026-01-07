@@ -1,10 +1,7 @@
 package de.waldorfaugsburg.infoboard.config.action;
 
 import de.waldorfaugsburg.infoboard.InfoboardApplication;
-import de.waldorfaugsburg.infoboard.procurat.HttpClientException;
-import de.waldorfaugsburg.infoboard.procurat.ProcuratClient;
-import de.waldorfaugsburg.infoboard.procurat.ProcuratGroupMembership;
-import de.waldorfaugsburg.infoboard.procurat.ProcuratPerson;
+import de.waldorfaugsburg.infoboard.procurat.*;
 import de.waldorfaugsburg.infoboard.window.ButtonActionsFrame;
 import de.waldorfaugsburg.infoboard.window.ProcuratGroupTableFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +15,8 @@ import java.util.Map;
 @Slf4j
 public class ProcuratGroupTableAction extends AbstractButtonAction {
 
+    private int groupId;
+
     protected ProcuratGroupTableAction() {
         super(ButtonActionType.PROCURAT_GROUP_TABLE);
     }
@@ -28,11 +27,13 @@ public class ProcuratGroupTableAction extends AbstractButtonAction {
             final ProcuratClient client = ProcuratClient.createInstance(application);
 
             final Map<ProcuratPerson, ProcuratGroupMembership> membershipMap = new HashMap<>();
-            for (final ProcuratGroupMembership membership : client.getGroupMemberships(276)) {
+            for (final ProcuratGroupMembership membership : client.getGroupMemberships(groupId)) {
                 membershipMap.put(client.getProcuratPersonById(membership.getPersonId()), membership);
             }
 
-            new ProcuratGroupTableFrame(application, List.of("RSA_MO", "RSA_DI", "RSA_MI", "RSA_DO", "RSA_FR", "GRP_KL", "GRP_HKU", "GRP_SPR_EN", "GRP_SPR_FR", "GRP_REL", "GRP_MUS"), membershipMap);
+            final ProcuratGroup group = client.getProcuratGroupById(groupId);
+
+            new ProcuratGroupTableFrame(application, "Gruppeneinteilung/Randstundenabfrage: Klasse " + group.getName(), List.of("RSA_MO", "RSA_DI", "RSA_MI", "RSA_DO", "RSA_FR", "GRP_KL", "GRP_HKU", "GRP_SPR_EN", "GRP_SPR_FR", "GRP_REL", "GRP_MUS"), membershipMap);
         } catch (HttpClientException e) {
             throw new RuntimeException(e);
         }
@@ -40,6 +41,18 @@ public class ProcuratGroupTableAction extends AbstractButtonAction {
 
     @Override
     public void createSettingsForm(final InfoboardApplication application, final ButtonActionsFrame frame, final JPanel contentPane) {
+        final JLabel pathLabel = new JLabel("Gruppen-ID");
+        pathLabel.setBounds(0, 4, 56, 14);
+        contentPane.add(pathLabel);
+
+        final JSpinner groupIdSpinner = new JSpinner();
+        groupIdSpinner.setBounds(64, 1, 165, 20);
+        groupIdSpinner.setValue(groupId);
+        groupIdSpinner.addChangeListener(e -> {
+            groupId = (int) groupIdSpinner.getValue();
+            frame.updateList();
+        });
+        contentPane.add(groupIdSpinner);
     }
 
     @Override

@@ -27,28 +27,20 @@ public class TextIcon extends AbstractStreamDeckIcon {
     }
 
     @Override
-    public BufferedImage createImage() {
-        final BufferedImage image = new BufferedImage(ICON_SIZE, ICON_SIZE, BufferedImage.TYPE_INT_RGB);
-        final Graphics2D graphics = image.createGraphics();
-        graphics.setColor(Color.BLACK);
-        graphics.fillRect(0, 0, image.getWidth(), image.getHeight());
+    public void render(final Graphics2D graphics) {
         graphics.setColor(Color.WHITE);
         graphics.setFont(new Font(fontFamily, Font.PLAIN, fontSize));
 
-        final FontMetrics fm = graphics.getFontMetrics();
-
         // Draw lines centered
+        final FontMetrics fm = graphics.getFontMetrics();
         final String[] lines = text.split("\n");
         for (int i = 0; i < lines.length; i++) {
             final String line = lines[i];
 
-            final int x = (image.getWidth() - fm.stringWidth(line)) / 2;
-            final int y = (fm.getAscent() + (image.getHeight() - ((fm.getAscent() + fm.getDescent()) * (lines.length) - 1)) / 2);
+            final int x = (getWidth() - fm.stringWidth(line)) / 2;
+            final int y = (fm.getAscent() + (getHeight() - ((fm.getAscent() + fm.getDescent()) * (lines.length) - 1)) / 2);
             graphics.drawString(line, x, y + (i * fm.getHeight()));
         }
-
-        graphics.dispose();
-        return image;
     }
 
     @Override

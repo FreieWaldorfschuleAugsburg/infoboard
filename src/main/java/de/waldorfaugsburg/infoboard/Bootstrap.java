@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Bootstrap {
 
-    static void main(final String[] args) {
+    public static void main(final String[] args) {
         final InfoboardApplication application = new InfoboardApplication();
 
         // Shutdown hook for doing important things on CTRL + C

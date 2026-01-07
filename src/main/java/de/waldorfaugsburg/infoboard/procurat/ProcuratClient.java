@@ -61,6 +61,10 @@ public final class ProcuratClient {
         return retrofitBuilder.build();
     }
 
+    public ProcuratGroup getProcuratGroupById(final int id) throws HttpClientException {
+        return execute(groupService.findById(id));
+    }
+
     public ProcuratPerson getProcuratPersonById(final int id) throws HttpClientException {
         return execute(personService.findById(id));
     }

@@ -10,4 +10,7 @@ public interface ProcuratGroupService {
     @GET("groups/{groupId}/members")
     Call<List<ProcuratGroupMembership>> findMembers(@Path("groupId") int groupId);
 
+    @GET("groups/{groupId}")
+    Call<ProcuratGroup> findById(@Path("groupId") int groupId);
+
 }
