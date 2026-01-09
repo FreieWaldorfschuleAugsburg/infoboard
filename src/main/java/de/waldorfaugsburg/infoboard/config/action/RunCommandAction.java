@@ -5,46 +5,46 @@ import de.waldorfaugsburg.infoboard.window.ButtonActionsFrame;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 
 @Slf4j
-public class KillProcessAction extends AbstractButtonAction {
+public class RunCommandAction extends AbstractButtonAction {
 
-    private String processName;
+    private String[] command;
 
-    protected KillProcessAction() {
-        super(ButtonActionType.KILL_PROCESS);
+    protected RunCommandAction() {
+        super(ButtonActionType.RUN_COMMAND);
     }
 
     @Override
     public void run(final InfoboardApplication application) {
         try {
-            Runtime.getRuntime().exec("taskkill /F /IM " + processName);
+            final ProcessBuilder builder = new ProcessBuilder(command);
+            builder.redirectErrorStream(true);
+            builder.start();
         } catch (final IOException e) {
-            log.error("Error while killing process {}", processName, e);
+            log.error("Error while running command {}", command, e);
         }
     }
 
     @Override
     public void createSettingsForm(final InfoboardApplication application, final ButtonActionsFrame frame, final JPanel contentPane) {
-        final JLabel pathLabel = new JLabel("Prozess");
+        final JLabel pathLabel = new JLabel("Befehl");
         pathLabel.setBounds(0, 4, 46, 14);
         contentPane.add(pathLabel);
 
-        final JTextField processField = new JTextField(10);
-        processField.setBounds(40, 1, 195, 20);
-        processField.setText(processName);
-        processField.addActionListener(e -> {
-            processName = processField.getText();
+        /*final JTextField pathField = new JTextField(10);
+        pathField.setBounds(34, 1, 195, 20);
+        pathField.setText(command);
+        pathField.addActionListener(e -> {
+            command = pathField.getText();
             frame.updateList();
         });
-        contentPane.add(processField);
+        contentPane.add(pathField);*/
     }
 
     @Override
     public String getDescription(final InfoboardApplication application) {
-        return getType().getName() + ": " + processName;
+        return getType().getName() + ": " + String.join(" ", command);
     }
 }

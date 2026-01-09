@@ -5,9 +5,7 @@ import java.util.function.Supplier;
 public enum ButtonActionType {
 
     MENU_CHANGE("Menü wechseln", MenuChangeAction::new),
-    OPEN_FILE("Datei öffnen", OpenFileAction::new),
-    OPEN_URL("URL öffnen", OpenUrlAction::new),
-    KILL_PROCESS("Prozess beenden", KillProcessAction::new),
+    RUN_COMMAND("Befehl ausführen", RunCommandAction::new),
     CLOSE_DIALOGS("Dialoge schließen", CloseDialogsAction::new),
     KEYPRESS("Tastendruck", KeypressAction::new),
     BRIGHTNESS("Helligkeit", BrightnessAction::new),
