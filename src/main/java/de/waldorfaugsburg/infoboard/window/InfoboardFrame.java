@@ -179,7 +179,7 @@ public class InfoboardFrame extends JFrame {
 
             button.setText("");
             button.setIcon(null);
-            button.setFont(new Font(button.getFont().getName(), Font.BOLD, 14));
+            button.setFont(new Font(button.getFont().getName(), Font.BOLD, 30));
             button.setTransferHandler(new ButtonTransferHandler(index));
 
             button.addMouseMotionListener(new MouseAdapter() {
